@@ -5594,7 +5594,7 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 			struct sched_attr *kattr,
 			unsigned int usize)
 {
-	unsigned int ksize = sizeof(*kattr);
+	int ret;
 
 	if (!access_ok(VERIFY_WRITE, uattr, usize))
 		return -EFAULT;
@@ -5611,9 +5611,21 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 	 * which part the kernel doesn't know about. Just ignore it - tooling can
 	 * detect the kernel's knowledge of attributes from the attr->size value
 	 * which is set to ksize in this case.
+	 * sched_getattr() ABI forwards and backwards compatibility:
+	 *
+	 * If usize == ksize then we just copy everything to user-space and all is good.
+	 *
+	 * If usize < ksize then we only copy as much as user-space has space for,
+	 * this keeps ABI compatibility as well. We skip the rest.
+	 *
+	 * If usize > ksize then user-space is using a newer version of the ABI,
+	 * which part the kernel doesn't know about. Just ignore it - tooling can
+	 * detect the kernel's knowledge of attributes from the attr->size value
+	 * which is set to ksize in this case.
 	 */
 	kattr->size = min(usize, ksize);
 
+	if (copy_to_user(uattr, kattr, kattr->size))
 	if (copy_to_user(uattr, kattr, kattr->size))
 		return -EFAULT;
 
@@ -5656,6 +5668,7 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 	else if (task_has_rt_policy(p))
 		kattr.sched_priority = p->rt_priority;
 	else
+		kattr.sched_nice = task_nice(p);
 		kattr.sched_nice = task_nice(p);
 
 #ifdef CONFIG_UCLAMP_TASK
