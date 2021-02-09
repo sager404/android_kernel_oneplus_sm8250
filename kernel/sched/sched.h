@@ -2646,19 +2646,10 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #endif /* CONFIG_CPU_FREQ */
 
 #ifdef CONFIG_UCLAMP_TASK
-unsigned long uclamp_eff_value(struct task_struct *p, enum uclamp_id clamp_id);
-
-static __always_inline
-unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
-				  struct task_struct *p)
+static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
 {
-	unsigned long min_util = READ_ONCE(rq->uclamp[UCLAMP_MIN].value);
-	unsigned long max_util = READ_ONCE(rq->uclamp[UCLAMP_MAX].value);
-
-	if (p) {
-		min_util = max(min_util, uclamp_eff_value(p, UCLAMP_MIN));
-		max_util = max(max_util, uclamp_eff_value(p, UCLAMP_MAX));
-	}
+	unsigned int min_util = READ_ONCE(rq->uclamp[UCLAMP_MIN].value);
+	unsigned int max_util = READ_ONCE(rq->uclamp[UCLAMP_MAX].value);
 
 	/*
 	 * Since CPU's {min,max}_util clamps are MAX aggregated considering
@@ -2671,18 +2662,22 @@ unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
 	return clamp(util, min_util, max_util);
 }
 #else /* CONFIG_UCLAMP_TASK */
-static inline
-unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
-				  struct task_struct *p)
+static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
 {
 	return util;
 }
 #endif /* CONFIG_UCLAMP_TASK */
 
-unsigned long task_util_est(struct task_struct *p);
-unsigned int uclamp_task(struct task_struct *p);
-bool uclamp_latency_sensitive(struct task_struct *p);
-bool uclamp_boosted(struct task_struct *p);
+#ifdef CONFIG_SCHED_WALT
+
+static inline bool
+walt_task_in_cum_window_demand(struct rq *rq, struct task_struct *p)
+{
+	return cpu_of(rq) == task_cpu(p) &&
+	       (p->on_rq || p->last_sleep_ts >= rq->window_start);
+}
+
+#endif /* CONFIG_SCHED_WALT */
 
 #ifdef arch_scale_freq_capacity
 # ifndef arch_scale_freq_invariant
