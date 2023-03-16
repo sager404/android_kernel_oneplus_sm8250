@@ -1,15 +1,15 @@
 name: Build OnePluss-Sm8250-Kernel
 on:
   workflow_dispatch:
-  schedule:
+  #schedule:
       # Run once a week on Sunday at midnight. See http://crontab.guru
-      - cron: '0 21 * * *'
+      #- cron: '0 21 * * *'
   push:
     branches:
-      - HEAD
+      - test
   pull_request:
       branches:
-      - HEAD
+      - test
 
 jobs:
   build:
@@ -20,7 +20,11 @@ jobs:
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
       KERNEL_DEFCONFIG: "vendor/kona-perf_defconfig"
+<<<<<<< HEAD
       KERNEL_CMDLINE: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- LLVM=1 LLVM_IAS=1 O=out"
+=======
+      KERNEL_CMDLINE: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- LLVM=1 LLVM_IAS=1 O=out"
+>>>>>>> 49971ca6b800c (Update aosp-clang.yaml)
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -37,7 +41,11 @@ jobs:
         sudo apt install gcc-aarch64-linux-gnu -y
         sudo apt install gcc-arm-linux-gnueabi -y
         sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
+<<<<<<< HEAD
         git clone https://codeberg.org/Mandi-Sa/clang --dept=1 -b amd64-kernel-arm
+=======
+        git clone https://github.com/kdrag0n/proton-clang --dept=1 -b master
+>>>>>>> 49971ca6b800c (Update aosp-clang.yaml)
         git clone https://github.com/lateautumn233/AnyKernel3 -b master --depth=1
         rm -rf AnyKernel3/.git
     
