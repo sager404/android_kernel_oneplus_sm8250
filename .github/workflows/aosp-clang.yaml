@@ -1,0 +1,70 @@
+name: Build OnePluss-Sm8250-Kernel
+on:
+  workflow_dispatch:
+  #schedule:
+      # Run once a week on Sunday at midnight. See http://crontab.guru
+      #- cron: '0 21 * * *'
+  push:
+    branches:
+      - test
+  pull_request:
+      branches:
+      - test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+
+      KERNEL_DEFCONFIG: "vendor/kona-perf_defconfig"
+      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=$(pwd)/android-13.0.0_r0.62/bin/aarch64-linux-android- LLVM=1 LLVM_IAS=1 O=out"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+        fetch-depth: 100
+
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -y
+        sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
+        git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r475365b --depth=1
+        git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+/refs/tags/android-13.0.0_r0.62 --depth=1
+        git clone https://github.com/lateautumn233/AnyKernel3 -b master --depth=1
+        rm -rf AnyKernel3/.git
+    
+    - name: GetTime
+      id: get_time
+      run: |
+        echo "TIME=$(TZ=UTC-8 date +%m%d%H%M )" >> $GITHUB_OUTPUT
+
+    - name: Build Kernel
+      run: |
+       export PATH=$(pwd)/clang-r475365b/bin/:$PATH
+       export ARCH=arm64
+       export SUBARCH=arm64
+       make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC=clang -j$(nproc --all)
+       make $KERNEL_CMDLINE CC=clang -j$(nproc --all)
+       cp out/arch/arm64/boot/Image.gz AnyKernel3
+
+    - name: Upload Kernel
+      uses: actions/upload-artifact@v3
+      with:
+        name: Qiuqiu-kernel-${{ steps.get_time.outputs.TIME }}
+        path: "AnyKernel3/*"
+
+    - name: Build Kernel-SU
+      run: |
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+        export PATH=$(pwd)/clang-r475365b/bin/:$PATH
+        make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC=clang -j$(nproc --all)
+        make $KERNEL_CMDLINE CC=clang -j$(nproc --all)
+        cp out/arch/arm64/boot/Image.gz AnyKernel3
+
+    - name: Upload Kernel-SU
+      uses: actions/upload-artifact@v3
+      with:
+        name: Qiuqiu-kernel-SU-${{ steps.get_time.outputs.TIME }}
+        path: "AnyKernel3/*"
