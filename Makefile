@@ -771,7 +771,20 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS   += -Os
 else
-KBUILD_CFLAGS   += -O2
+KBUILD_CFLAGS   += -O3
+endif
+
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS	+= -mcpu=native
+KBUILD_CFLAGS	+= $(call cc-option, -mllvm -polly) \
+		   $(call cc-option, -mllvm -polly-run-dce) \
+		   $(call cc-option, -mllvm -polly-run-inliner) \
+		   $(call cc-option, -mllvm -polly-loopfusion-greedy=1) \
+		   $(call cc-option, -mllvm -polly-ast-use-context) \
+		   $(call cc-option, -mllvm -polly-vectorizer=stripmine) \
+		   $(call cc-option, -mllvm -polly-invariant-load-hoisting) \
+		   $(call cc-option, -mllvm -polly-reschedule=1) \
+		   $(call cc-option, -mllvm -polly-postopts=1)
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
