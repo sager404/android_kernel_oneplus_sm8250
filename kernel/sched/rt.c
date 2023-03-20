@@ -14,7 +14,7 @@
 #ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
 #include "../../drivers/soc/oplus/game_opt/game_ctrl.h"
 #endif
-
+#include "tune.h"
 #include "walt.h"
 
 int sched_rr_timeslice = RR_TIMESLICE;

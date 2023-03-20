@@ -9,6 +9,7 @@
 #include <linux/jiffies.h>
 #include <linux/sched/stat.h>
 #include <trace/events/sched.h>
+#include "tune.h"
 #include "sched.h"
 #include "walt.h"
 
@@ -258,6 +259,34 @@ void fixup_walt_sched_stats_common(struct rq *rq, struct task_struct *p,
 
 	walt_fixup_cum_window_demand(rq, task_load_delta);
 }
+
+#if defined(OPLUS_FEATURE_POWER_CPUFREQ) && defined(OPLUS_FEATURE_POWER_EFFICIENCY)
+#define UC_READ_F(NAME, MEMBER, DEFAULT) \
+unsigned int NAME(struct task_struct *p) \
+{ \
+	struct cgroup_subsys_state *css; \
+	struct task_group *tg; \
+	unsigned int ret; \
+\
+	rcu_read_lock(); \
+	css = task_css(p, cpu_cgrp_id); \
+	if (!css) { \
+		rcu_read_unlock(); \
+		return DEFAULT; \
+	} \
+	tg = container_of(css, struct task_group, css); \
+	ret = tg->wtg.MEMBER; \
+	rcu_read_unlock(); \
+\
+	return ret; \
+}
+
+UC_READ_F(uclamp_window_policy, window_policy,
+                               WINDOW_STATS_MAX_RECENT_AVG)
+UC_READ_F(uclamp_discount_wait_time, discount_wait_time, 0)
+UC_READ_F(uclamp_top_task_filter, top_task_filter, 0)
+UC_READ_F(uclamp_ed_task_filter, ed_task_filter, 0)
+#endif
 
 /*
  * Demand aggregation for frequency purpose:
@@ -3045,6 +3074,32 @@ add_task_to_group(struct task_struct *p, struct related_thread_group *grp)
 	return 0;
 }
 
+#ifdef CONFIG_UCLAMP_TASK_GROUP
+static inline bool uclamp_task_colocated(struct task_struct *p)
+{
+	struct cgroup_subsys_state *css;
+	struct task_group *tg;
+	bool colocate;
+
+	rcu_read_lock();
+	css = task_css(p, cpu_cgrp_id);
+	if (!css) {
+		rcu_read_unlock();
+		return false;
+	}
+	tg = container_of(css, struct task_group, css);
+	colocate = tg->wtg.colocate;
+	rcu_read_unlock();
+
+	return colocate;
+}
+#else
+static inline bool uclamp_task_colocated(struct task_struct *p)
+{
+	return false;
+}
+#endif /* CONFIG_UCLAMP_TASK_GROUP */
+
 void add_new_task_to_grp(struct task_struct *new)
 {
 	unsigned long flags;
@@ -3056,7 +3111,7 @@ void add_new_task_to_grp(struct task_struct *new)
 	 * lock. Even if there is a race, it will be added
 	 * to the co-located cgroup via cgroup attach.
 	 */
-	if (!schedtune_task_colocated(new))
+	if (!uclamp_task_colocated(new))
 		return;
 
 	grp = lookup_related_thread_group(DEFAULT_CGROUP_COLOC_ID);
@@ -3067,7 +3122,7 @@ void add_new_task_to_grp(struct task_struct *new)
 	 * group. or it might have taken out from the colocated schedtune
 	 * cgroup. check these conditions under lock.
 	 */
-	if (!schedtune_task_colocated(new) || new->grp) {
+	if (!uclamp_task_colocated(new) || new->grp) {
 		write_unlock_irqrestore(&related_thread_group_lock, flags);
 		return;
 	}
