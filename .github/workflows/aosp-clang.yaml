@@ -6,10 +6,10 @@ on:
       #- cron: '0 21 * * *'
   push:
     branches:
-      - test
+      - LTO
   pull_request:
       branches:
-      - test
+      - LTO
 
 jobs:
   build:
