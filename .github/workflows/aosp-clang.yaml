@@ -6,10 +6,10 @@ on:
       #- cron: '0 21 * * *'
   push:
     branches:
-      - test
+      - UClamp
   pull_request:
       branches:
-      - test
+      - UClamp
 
 jobs:
   build:
