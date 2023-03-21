@@ -7185,7 +7185,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					struct task_struct *p,
 					struct find_best_target_env *fbt_env)
 {
-	unsigned long min_util = uclamp_task(p);
+	unsigned long min_util = uclamp_task_util(p);
 	unsigned long target_capacity = ULONG_MAX;
 	unsigned long min_wake_util = ULONG_MAX;
 	unsigned long target_max_spare_cap = 0;
