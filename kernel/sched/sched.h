@@ -3095,80 +3095,15 @@ static inline bool schedtune_task_colocated(struct task_struct *p)
 	return false;
 }
 
-
+static inline bool task_sched_boost(struct task_struct *p)
+{
+	return true;
+}
 
 
 #endif
 
-#ifdef CONFIG_UCLAMP_TASK_GROUP
-static inline bool task_sched_boost(struct task_struct *p)
-{
-	struct cgroup_subsys_state *css;
-	struct task_group *tg;
-	bool sched_boost_enabled;
 
-	rcu_read_lock();
-	css = task_css(p, cpu_cgrp_id);
-	if (!css) {
-		rcu_read_unlock();
-		return false;
-	}
-	tg = container_of(css, struct task_group, css);
-	sched_boost_enabled = tg->wtg.sched_boost_enabled;
-	rcu_read_unlock();
-
-	return sched_boost_enabled;
-}
-
-extern int sync_cgroup_colocation(struct task_struct *p, bool insert);
-#else
-static inline bool
-same_schedtg(struct task_struct *tsk1, struct task_struct *tsk2)
-{
-	return true;
-}
-
-static inline bool task_sched_boost(struct task_struct *p)
-{
-	return true;
-}
-
-#endif
-
-#ifdef CONFIG_UCLAMP_TASK_GROUP
-static inline bool task_sched_boost(struct task_struct *p)
-{
-	struct cgroup_subsys_state *css;
-	struct task_group *tg;
-	bool sched_boost_enabled;
-
-	rcu_read_lock();
-	css = task_css(p, cpu_cgrp_id);
-	if (!css) {
-		rcu_read_unlock();
-		return false;
-	}
-	tg = container_of(css, struct task_group, css);
-	sched_boost_enabled = tg->wtg.sched_boost_enabled;
-	rcu_read_unlock();
-
-	return sched_boost_enabled;
-}
-
-extern int sync_cgroup_colocation(struct task_struct *p, bool insert);
-#else
-static inline bool
-same_schedtg(struct task_struct *tsk1, struct task_struct *tsk2)
-{
-	return true;
-}
-
-static inline bool task_sched_boost(struct task_struct *p)
-{
-	return true;
-}
-
-#endif
 
 extern int alloc_related_thread_groups(void);
 
