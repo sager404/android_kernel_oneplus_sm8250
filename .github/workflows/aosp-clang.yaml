@@ -17,7 +17,7 @@ jobs:
     env:
 
       KERNEL_DEFCONFIG: "vendor/kona-perf_defconfig"
-      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=$(pwd)/gcc/bin/aarch64-linux-android- LLVM=1 LLVM_IAS=1 O=out"
+      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=$(pwd)/gcc/bin/aarch64-linux-android- CROSS_COMPILE_COMPAT=$(pwd)/gcc/bin/aarch64-linux-android- LLVM=1 LLVM_IAS=1 O=out"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
