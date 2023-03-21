@@ -5780,8 +5780,7 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 			struct sched_attr *kattr,
 			unsigned int usize)
 {
-	int ret;
-
+	unsigned int ksize = sizeof(*kattr);
 	if (!access_ok(VERIFY_WRITE, uattr, usize))
 		return -EFAULT;
 
@@ -5811,7 +5810,7 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 	 */
 	kattr->size = min(usize, ksize);
 
-	if (copy_to_user(uattr, kattr, kattr->size))
+	
 	if (copy_to_user(uattr, kattr, kattr->size))
 		return -EFAULT;
 
@@ -5855,7 +5854,6 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 		kattr.sched_priority = p->rt_priority;
 	else
 		kattr.sched_nice = task_nice(p);
-		kattr.sched_nice = task_nice(p);
 
 #ifdef CONFIG_UCLAMP_TASK
 	/*
@@ -5867,10 +5865,6 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 	kattr.sched_util_max = p->uclamp_req[UCLAMP_MAX].value;
 #endif
 
-#ifdef CONFIG_UCLAMP_TASK
-	attr.sched_util_min = p->uclamp_req[UCLAMP_MIN].value;
-	attr.sched_util_max = p->uclamp_req[UCLAMP_MAX].value;
-#endif
 
 	rcu_read_unlock();
 
