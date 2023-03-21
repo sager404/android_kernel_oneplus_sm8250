@@ -2668,7 +2668,7 @@ unsigned long uclamp_eff_value(struct task_struct *p, enum uclamp_id clamp_id);
  * static key is disabled.
  */
 static __always_inline
-unsigned long uclamp_util_with(struct rq *rq, unsigned long util,
+unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
 			       struct task_struct *p)
 {
 	unsigned long min_util;
@@ -3102,6 +3102,7 @@ static inline bool task_sched_boost(struct task_struct *p)
 
 
 #endif
+
 
 
 
