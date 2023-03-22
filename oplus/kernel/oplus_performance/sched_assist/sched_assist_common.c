@@ -247,8 +247,11 @@ bool should_force_spread_tasks(void) {
 #ifdef CONFIG_CGROUP_SCHED
 static inline int task_cgroup_id(struct task_struct *task)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	struct cgroup_subsys_state *css = task_css(task, cpu_cgrp_id);
-
+#else
+	struct cgroup_subsys_state *css = task_css(task, schedtune_cgrp_id);
+#endif
 
 	return css ? css->id : -1;
 }
@@ -291,11 +294,11 @@ bool task_high_load(struct task_struct *tsk)
 
 	if (sched_type == SA_BG)
 		load = min(load, tsk->se.avg.util_avg);
-
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	load = clamp(load,
 		     uclamp_eff_value(tsk, UCLAMP_MIN),
 		     uclamp_eff_value(tsk, UCLAMP_MAX));
-
+#endif
 
 	if (capacity == max_capacity)
 		return true;
@@ -1617,9 +1620,11 @@ int get_grp(struct task_struct *p)
 	if (p == NULL)
 		return false;
 	rcu_read_lock();
-
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 	css = task_css(p, cpu_cgrp_id);
-
+#else
+	css = task_css(p, schedtune_cgrp_id);
+#endif
 	if (!css) {
 		rcu_read_unlock();
 		return false;
