@@ -5208,7 +5208,7 @@ struct task_struct *idle_task(int cpu)
  * required to meet deadlines.
  */
 unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-				 enum cpu_util_type type,
+				 enum schedutil_type type,
 				 struct task_struct *p)
 {
 	unsigned long dl_util, util, irq, max;
