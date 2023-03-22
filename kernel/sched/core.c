@@ -7969,21 +7969,7 @@ static inline struct task_group *css_tg(struct cgroup_subsys_state *css)
 }
 
 #if defined(CONFIG_SCHED_WALT) && defined(CONFIG_UCLAMP_TASK_GROUP)
-static void walt_schedgp_attach(struct cgroup_taskset *tset)
-{
-	struct task_struct *task;
-	struct cgroup_subsys_state *css;
-	bool colocate;
-	struct task_group *tg;
 
-	cgroup_taskset_first(tset, &css);
-	tg = css_tg(css);
-
-	colocate = tg->colocate;
-
-	cgroup_taskset_for_each(task, css, tset)
-		sync_cgroup_colocation(task, colocate);
-}
 
 static u64 sched_colocate_read(struct cgroup_subsys_state *css,
 						struct cftype *cft)
