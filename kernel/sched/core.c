@@ -1095,11 +1095,9 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
 		return;
 
 	bucket = &uc_rq->bucket[uc_se->bucket_id];
-
 	SCHED_WARN_ON(!bucket->tasks);
 	if (likely(bucket->tasks))
 		bucket->tasks--;
-
 	uc_se->active = false;
 
 	/*
@@ -1189,7 +1187,7 @@ uclamp_update_active(struct task_struct *p, enum uclamp_id clamp_id)
 	 * affecting a valid clamp bucket, the next time it's enqueued,
 	 * it will already see the updated clamp bucket value.
 	 */
-	if (!p->uclamp[clamp_id].active) {
+	if (p->uclamp[clamp_id].active) {
 		uclamp_rq_dec_id(rq, p, clamp_id);
 		uclamp_rq_inc_id(rq, p, clamp_id);
 	}
@@ -1461,6 +1459,9 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_inc(rq, p);
+	#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+	jankinfo_android_rvh_enqueue_task_handler(NULL, rq, p, flags);
+#endif
 	p->sched_class->enqueue_task(rq, p, flags);
 	walt_update_last_enqueue(p);
 	trace_sched_enq_deq_task(p, 1, cpumask_bits(&p->cpus_allowed)[0]);
@@ -5810,7 +5811,6 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 	 */
 	kattr->size = min(usize, ksize);
 
-	
 	if (copy_to_user(uattr, kattr, kattr->size))
 		return -EFAULT;
 
@@ -5864,7 +5864,6 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 	kattr.sched_util_min = p->uclamp_req[UCLAMP_MIN].value;
 	kattr.sched_util_max = p->uclamp_req[UCLAMP_MAX].value;
 #endif
-
 
 	rcu_read_unlock();
 
@@ -7642,6 +7641,10 @@ void __init sched_init(void)
 
 	init_uclamp();
 
+#ifdef OPLUS_FEATURE_SCHED_ASSIST
+	set_random_uxchain_v2();
+#endif
+
 	scheduler_running = 1;
 }
 
@@ -7823,7 +7826,6 @@ static inline void alloc_uclamp_sched_group(struct task_group *tg,
 		uclamp_se_set(&tg->uclamp_req[clamp_id],
 			      uclamp_none(clamp_id), false);
 		tg->uclamp[clamp_id] = parent->uclamp[clamp_id];
-		tg->uclamp[clamp_id] = parent->uclamp[clamp_id];
 	}
 #endif
 }
@@ -7850,8 +7852,6 @@ struct task_group *sched_create_group(struct task_group *parent)
 
 	if (!alloc_rt_sched_group(tg, parent))
 		goto err;
-
-	alloc_uclamp_sched_group(tg, parent);
 
 	alloc_uclamp_sched_group(tg, parent);
 
