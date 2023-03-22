@@ -3209,6 +3209,41 @@ int sync_cgroup_colocation(struct task_struct *p, bool insert)
 }
 #endif
 
+#if defined(CONFIG_UCLAMP_TASK_GROUP)
+/*
+ * We create a default colocation group at boot. There is no need to
+ * synchronize tasks between cgroups at creation time because the
+ * correct cgroup hierarchy is not available at boot. Therefore cgroup
+ * colocation is turned off by default even though the colocation group
+ * itself has been allocated. Furthermore this colocation group cannot
+ * be destroyted once it has been created. All of this has been as part
+ * of runtime optimizations.
+ *
+ * The job of synchronizing tasks to the colocation group is done when
+ * the colocation flag in the cgroup is turned on.
+ */
+static int __init create_default_coloc_group(void)
+{
+	struct related_thread_group *grp = NULL;
+	unsigned long flags;
+
+	grp = lookup_related_thread_group(DEFAULT_CGROUP_COLOC_ID);
+	write_lock_irqsave(&related_thread_group_lock, flags);
+	list_add(&grp->list, &active_related_thread_groups);
+	write_unlock_irqrestore(&related_thread_group_lock, flags);
+
+	return 0;
+}
+late_initcall(create_default_coloc_group);
+
+int sync_cgroup_colocation(struct task_struct *p, bool insert)
+{
+	unsigned int grp_id = insert ? DEFAULT_CGROUP_COLOC_ID : 0;
+
+	return __sched_set_group_id(p, grp_id);
+}
+#endif
+
 static bool is_cluster_hosting_top_app(struct sched_cluster *cluster)
 {
 	struct related_thread_group *grp;
