@@ -13453,18 +13453,18 @@ bool prefer_silver_check_freq(int cpu)
 
 bool prefer_silver_check_task_util(struct task_struct *p)
 {
-	int cpu;
-	unsigned long thresh_load;
-	struct reciprocal_value spc_rdiv = reciprocal_value(100);
+	// int cpu;
+	// unsigned long thresh_load;
+	// struct reciprocal_value spc_rdiv = reciprocal_value(100);
 
-	if (!p)
-		return false;
+	// if (!p)
+	// 	return false;
 
-	cpu = task_cpu(p);
-	thresh_load = capacity_orig_of(cpu) * sysctl_heavy_task_thresh;
-	if(task_util(p) <  reciprocal_divide(thresh_load,spc_rdiv) ||
-			scale_demand(p->ravg.sum) < reciprocal_divide(thresh_load,spc_rdiv))
-		return true;
+	// cpu = task_cpu(p);
+	// thresh_load = capacity_orig_of(cpu) * sysctl_heavy_task_thresh;
+	// if(task_util(p) <  reciprocal_divide(thresh_load,spc_rdiv) ||
+	// 		scale_demand(p->ravg.sum) < reciprocal_divide(thresh_load,spc_rdiv))
+	// 	return true;
 
 	return false;
 }
