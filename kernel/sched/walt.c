@@ -1950,7 +1950,7 @@ static void update_history(struct rq *rq, struct task_struct *p,
 
 	p->ravg.sum = 0;
 #ifdef OPLUS_FEATURE_POWER_CPUFREQ
-	#sysctl_sched_window_stats_policy = schedtune_window_policy(p);
+	// sysctl_sched_window_stats_policy = schedtune_window_policy(p);
 #endif
 
 	if (sysctl_sched_window_stats_policy == WINDOW_STATS_RECENT) {
