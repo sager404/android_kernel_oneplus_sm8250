@@ -3248,13 +3248,7 @@ static struct ctl_table sched_core_sysctls[] = {
 #endif /* CONFIG_UCLAMP_TASK */
 	{}
 };
-static int __init sched_core_sysctl_init(void)
-{
-	register_sysctl_init("kernel", sched_core_sysctls);
-	return 0;
-}
-late_initcall(sched_core_sysctl_init);
-#endif /* CONFIG_SYSCTL */
+
 
 /*
  * fork()/clone()-time setup:
