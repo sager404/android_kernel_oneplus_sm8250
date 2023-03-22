@@ -370,8 +370,8 @@ void clear_ed_task(struct task_struct *p, struct rq *rq)
 static inline bool is_ed_task(struct task_struct *p, u64 wallclock)
 {
 #if defined(OPLUS_FEATURE_POWER_CPUFREQ) && defined(OPLUS_FEATURE_POWER_EFFICIENCY)
-	if (uclamp_ed_task_filter(p))
-		return false;
+	// if (uclamp_ed_task_filter(p))
+	// 	return false;
 #endif
 	return (wallclock - p->last_wake_ts >= EARLY_DETECTION_DURATION);
 }
@@ -1356,8 +1356,8 @@ static void update_top_tasks(struct task_struct *p, struct rq *rq,
 	bool zero_index_update;
 
 #if defined(OPLUS_FEATURE_POWER_CPUFREQ) && defined(OPLUS_FEATURE_POWER_EFFICIENCY)
-	if (uclamp_top_task_filter(p))
-		return;
+	// if (uclamp_top_task_filter(p))
+	// 	return;
 #endif
 	if (old_curr_window == curr_window && !new_window)
 		return;
@@ -1875,10 +1875,10 @@ account_busy_for_task_demand(struct rq *rq, struct task_struct *p, int event)
 	 * is completing a segment of non-busy time.
 	 */
 #if defined(OPLUS_FEATURE_POWER_CPUFREQ) && defined(OPLUS_FEATURE_POWER_EFFICIENCY)
-	if (event == TASK_WAKE || ((!SCHED_ACCOUNT_WAIT_TIME ||
-			  uclamp_discount_wait_time(p)) &&
-			 (event == PICK_NEXT_TASK || event == TASK_MIGRATE)))
-		return 0;
+	// if (event == TASK_WAKE || ((!SCHED_ACCOUNT_WAIT_TIME ||
+	// 		  uclamp_discount_wait_time(p)) &&
+	// 		 (event == PICK_NEXT_TASK || event == TASK_MIGRATE)))
+	// 	return 0;
 #else
 	if (event == TASK_WAKE || (!SCHED_ACCOUNT_WAIT_TIME &&
 			 (event == PICK_NEXT_TASK || event == TASK_MIGRATE)))
@@ -1900,8 +1900,8 @@ account_busy_for_task_demand(struct rq *rq, struct task_struct *p, int event)
 			return 1;
 
 #if defined(OPLUS_FEATURE_POWER_CPUFREQ) && defined(OPLUS_FEATURE_POWER_EFFICIENCY)
-		return p->on_rq ? (SCHED_ACCOUNT_WAIT_TIME &&
-		                   !uclamp_discount_wait_time(p)) : 0;
+		// return p->on_rq ? (SCHED_ACCOUNT_WAIT_TIME &&
+		//                    !uclamp_discount_wait_time(p)) : 0;
 #else
 		return p->on_rq ? SCHED_ACCOUNT_WAIT_TIME : 0;
 #endif
@@ -1950,7 +1950,7 @@ static void update_history(struct rq *rq, struct task_struct *p,
 
 	p->ravg.sum = 0;
 #ifdef OPLUS_FEATURE_POWER_CPUFREQ
-	sysctl_sched_window_stats_policy = schedtune_window_policy(p);
+	#sysctl_sched_window_stats_policy = schedtune_window_policy(p);
 #endif
 
 	if (sysctl_sched_window_stats_policy == WINDOW_STATS_RECENT) {
