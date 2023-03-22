@@ -3248,7 +3248,7 @@ static struct ctl_table sched_core_sysctls[] = {
 #endif /* CONFIG_UCLAMP_TASK */
 	{}
 };
-
+#endif
 
 /*
  * fork()/clone()-time setup:
