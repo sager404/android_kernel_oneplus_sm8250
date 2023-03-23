@@ -30,7 +30,7 @@ bool is_top(struct task_struct *p)
 		return false;
 
 	rcu_read_lock();
-	css = task_css(p, schedtune_cgrp_id);
+	css = task_css(p, cpu_cgrp_id);
 	if (!css) {
 		rcu_read_unlock();
 		return false;

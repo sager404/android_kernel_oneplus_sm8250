@@ -28,7 +28,7 @@
 #else
 #include <../kernel/sched/walt.h>
 #endif
-#if defined(CONFIG_OPLUS_FEATURE_INPUT_BOOST) && defined(CONFIG_OPLUS_FEATURE_IM)
+#if defined(CONFIG_OPLUS_FEATURE_INPUT_BOOST_V4) && defined(CONFIG_OPLUS_FEATURE_IM)
 extern bool is_webview(struct task_struct *p);
 #endif
 

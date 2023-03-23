@@ -143,3 +143,4 @@ build.sh
 # Ignore build script
 /horizon_build.sh
 compile_commands.json
+*.log
